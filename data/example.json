@@ -1,0 +1,157 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-11-11T00:00:00Z",
+  "streamers": [
+    {
+      "id": "mark-miller",
+      "name": "Mark Miller",
+      "aka": "CodeRushed",
+      "handle": "CodeRushed",
+      "description": "C#, .Net Core, ASP.Net Core, TypeScript, JavaScript, D&D Game development, CodeRush dog-fooding",
+      "topics": [
+        "C#",
+        ".NET Core",
+        "ASP.NET Core",
+        "TypeScript",
+        "JavaScript",
+        "Game Development"
+      ],
+      "platforms": [
+        {
+          "name": "Twitch",
+          "url": "https://www.twitch.tv/coderushed"
+        }
+      ],
+      "links": {
+        "twitter": "https://twitter.com/millermark",
+        "github": "https://github.com/millermark",
+        "youtube": "https://www.youtube.com/playlist?list=PL8h4jt35t1wgawacCN9wmxq1EN36CNUGk"
+      },
+      "languages": [
+        "English"
+      ],
+      "alphabeticalSection": "C"
+    },
+    {
+      "id": "aaron-schlesinger",
+      "name": "Aaron Schlesinger",
+      "aka": "Arschles",
+      "handle": "arschles",
+      "description": "Go/Golang, Python, Javascript, Kubernetes, Helm, Cloud Native",
+      "topics": [
+        "Go",
+        "Golang",
+        "Python",
+        "JavaScript",
+        "Kubernetes",
+        "Helm",
+        "Cloud Native"
+      ],
+      "platforms": [
+        {
+          "name": "Twitch",
+          "url": "https://twitch.tv/arschles"
+        }
+      ],
+      "links": {
+        "twitter": "https://twitter.com/arschles",
+        "github": "https://github.com/arschles",
+        "website": "https://arschles.com"
+      },
+      "languages": [
+        "English"
+      ],
+      "alphabeticalSection": "A"
+    },
+    {
+      "id": "brian-clark",
+      "name": "Brian Clark",
+      "aka": "Clarkio",
+      "handle": "Clarkio",
+      "description": "Node.js, JavaScript, IoT, Web Development, Swift",
+      "topics": [
+        "Node.js",
+        "JavaScript",
+        "IoT",
+        "Web Development",
+        "Swift"
+      ],
+      "platforms": [
+        {
+          "name": "Twitch",
+          "url": "https://www.twitch.tv/clarkio"
+        }
+      ],
+      "links": {
+        "twitter": "https://twitter.com/_clarkio",
+        "github": "https://github.com/clarkio",
+        "youtube": "https://www.youtube.com/channel/UCID02LhTNYYhWbok3zyggOw",
+        "instagram": "https://www.instagram.com/_clarkio/",
+        "website": "https://www.clarkio.com/"
+      },
+      "languages": [
+        "English"
+      ],
+      "alphabeticalSection": "B"
+    },
+    {
+      "id": "jeff-fritz",
+      "name": "Jeff Fritz",
+      "aka": "csharpfritz",
+      "handle": "csharpfritz",
+      "description": "C#, .NET, ASP.NET, OSS and Pair Programming",
+      "topics": [
+        "C#",
+        ".NET",
+        "ASP.NET",
+        "Open Source",
+        "Pair Programming"
+      ],
+      "platforms": [
+        {
+          "name": "Twitch",
+          "url": "https://twitch.tv/csharpfritz"
+        }
+      ],
+      "links": {
+        "twitter": "https://twitter.com/csharpfritz",
+        "github": "https://github.com/csharpfritz",
+        "website": "http://jeffreyfritz.com/",
+        "youtube": "https://www.youtube.com/channel/UCfvJirlbRTN-bU9sMWMb_ZQ"
+      },
+      "languages": [
+        "English"
+      ],
+      "alphabeticalSection": "J"
+    },
+    {
+      "id": "kevin-griffin",
+      "name": "Kevin Griffin",
+      "aka": "1kevgriff",
+      "handle": "1kevgriff",
+      "description": "C#, .NET, ASP.NET, 3D Printing, Conference Planning, and more!",
+      "topics": [
+        "C#",
+        ".NET",
+        "ASP.NET",
+        "3D Printing",
+        "Conference Planning"
+      ],
+      "platforms": [
+        {
+          "name": "Twitch",
+          "url": "https://www.twitch.tv/1kevgriff"
+        }
+      ],
+      "links": {
+        "twitter": "https://twitter.com/1kevgriff",
+        "github": "https://github.com/1kevgriff",
+        "website": "https://kevgriffin.com/"
+      },
+      "languages": [
+        "English"
+      ],
+      "alphabeticalSection": "K"
+    }
+  ]
+}
