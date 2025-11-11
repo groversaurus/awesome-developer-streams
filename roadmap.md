@@ -103,7 +103,7 @@ Transform the awesome-developer-streams list into an interactive, searchable Bla
 
 ### 🚧 In Progress
 - [x] Finalize architectural decisions ✅
-- [ ] Design JSON schema
+- [x] Design JSON schema ✅
 - [ ] Set up project structure
 
 ### 📋 To Do
