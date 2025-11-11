@@ -16,7 +16,7 @@ Transform the awesome-developer-streams list into an interactive, searchable Bla
 
 ### 1. Blazor Hosting Model
 **Options:**
-- [ ] **Blazor WebAssembly** 
+- [x] **Blazor WebAssembly** ✅ **SELECTED**
   - ✅ Static hosting (GitHub Pages, Azure Static Web Apps)
   - ✅ No server costs
   - ✅ Offline-capable
@@ -28,23 +28,24 @@ Transform the awesome-developer-streams list into an interactive, searchable Bla
   - ❌ Requires hosting infrastructure
   - ❌ Websocket connection required
 
-**Decision**: TBD - Leaning towards WebAssembly for simplicity
+**Decision**: ✅ **Blazor WebAssembly** - Enables static hosting with no server infrastructure requirements
 
 ---
 
 ### 2. Data Management Strategy
 **Options:**
-- [ ] **README as Source** (Recommended)
+- [x] **README as Source** ✅ **SELECTED**
   - Keep README.md as primary
   - Generate JSON on-demand or via CI/CD
   - Easy community contributions via PR
+  - Future: Consider contribution web UI if maintenance burden grows
   
 - [ ] **JSON as Source**
   - Make JSON primary data source
   - Generate README from JSON
   - More structured but harder to contribute
 
-**Decision**: TBD - Leaning towards README as source
+**Decision**: ✅ **README as Source** - Maintains community-friendly contribution model. Will evaluate creating a web-based contribution UI in the future if manual editing becomes a bottleneck.
 
 ---
 
@@ -58,31 +59,37 @@ Transform the awesome-developer-streams list into an interactive, searchable Bla
   - More robust
   - Handles variations better
   
-- [ ] **Hybrid approach**
+- [x] **Hybrid approach** ✅ **SELECTED**
   - Section-based parsing with targeted regex
+  - Balance of robustness and simplicity
 
-**Decision**: TBD
+**Decision**: ✅ **Hybrid F# Parser** - Use markdown structure to identify sections and streamer blocks, then apply targeted regex/pattern matching within each block to extract fields. Combines structural robustness with implementation simplicity.
 
 ---
 
 ### 4. Link Validation Strategy
 **Options:**
-- [ ] **One-time validation** - Manual run, generate report
+- [x] **One-time validation** ✅ **SELECTED** - Manual run, generate report
 - [ ] **CI/CD automated** - Check on every PR
 - [ ] **Scheduled checks** - Weekly cron job
 - [ ] **Lazy validation** - Check on user request in UI
 
-**Decision**: TBD
+**Decision**: ✅ **Manual validation tool** - F# console application run locally to generate validation reports. Simple, no infrastructure required, and a fun way to explore F#!
 
 ---
 
 ### 5. Additional Features
-- [ ] Twitch API integration for live status?
-- [ ] YouTube API for subscriber counts?
-- [ ] Statistics/analytics dashboard?
-- [ ] Dark mode?
-- [ ] RSS feed generation?
-- [ ] Export to CSV/JSON?
+**Priority Features (Phase 5):**
+- [x] Twitch API integration for live status ✅ **PLANNED**
+- [x] YouTube API for subscriber counts ✅ **PLANNED**
+- [x] Statistics/analytics dashboard ✅ **PLANNED**
+- [x] Dark mode ✅ **PLANNED**
+
+**Future Consideration:**
+- [ ] RSS feed generation
+- [ ] Export to CSV/JSON
+
+**Decision**: ✅ First four features planned for Phase 5 implementation after core functionality is complete.
 
 ---
 
@@ -95,7 +102,7 @@ Transform the awesome-developer-streams list into an interactive, searchable Bla
 - [x] Created roadmap.md
 
 ### 🚧 In Progress
-- [ ] Finalize architectural decisions
+- [x] Finalize architectural decisions ✅
 - [ ] Design JSON schema
 - [ ] Set up project structure
 
@@ -246,8 +253,13 @@ Transform the awesome-developer-streams list into an interactive, searchable Bla
 
 ### 2025-11-11
 - **Created**: Initial roadmap and copilot instructions
-- **Status**: Awaiting refinement from project owner
-- **Next Steps**: Review and refine architectural decisions
+- **Status**: ✅ All architectural decisions finalized
+- **Decision**: Blazor WebAssembly for static hosting
+- **Decision**: README.md as source of truth (with future consideration for web-based contribution UI)
+- **Decision**: Link validation tool in F# - manual local execution
+- **Decision**: Hybrid F# parser - structural sections + targeted regex
+- **Decision**: Phase 5 priorities - Twitch API, YouTube API, Statistics dashboard, Dark mode
+- **Next Steps**: Begin Phase 1 implementation - Design JSON schema and set up project structure
 
 ---
 

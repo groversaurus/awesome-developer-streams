@@ -11,10 +11,11 @@ This is a Blazor spike project for the awesome-developer-streams repository. The
 3. **Blazor App**: Consumes JSON for search/filter functionality
 
 ### Technology Stack
-- **Frontend**: Blazor (WebAssembly or Server - TBD)
+- **Frontend**: Blazor WebAssembly (static hosting)
 - **Data Format**: JSON schema for streamer data
-- **Validation**: Link checker utility
-- **Language**: C# for Blazor, potentially Python/Node.js for tooling
+- **Validation**: F# console application for link checking (manual execution)
+- **Parser**: TBD (C# or F#)
+- **Languages**: C# for Blazor, F# for tooling
 
 ## Code Style & Conventions
 
@@ -23,6 +24,12 @@ This is a Blazor spike project for the awesome-developer-streams repository. The
 - Follow Microsoft's C# coding conventions
 - Component-based architecture
 - Services for data access and API calls
+
+### F# / Tooling
+- Functional-first approach
+- Immutable data structures
+- Use Railway-Oriented Programming for error handling
+- Pipeline operators for data transformation
 
 ### JSON Schema
 ```json
@@ -96,12 +103,12 @@ This is a Blazor spike project for the awesome-developer-streams repository. The
 - Contribution guidelines integration
 - Export functionality
 
-## Testing Strategy
-- Unit tests for parser logic
-- Integration tests for link checker
-- Blazor component tests
-- End-to-end tests for search/filter
-
+## Open Questions (To be refined)
+1. ✅ Blazor hosting model: **WebAssembly for static hosting**
+2. ✅ Parsing strategy: **Hybrid approach - F# structural parsing with targeted regex**
+3. ✅ Link validation: **Manual F# tool**
+4. API integrations: Twitch live status?
+5. Deployment target: GitHub Pages, Azure, other?
 ## Open Questions (To be refined)
 1. Blazor hosting model: WebAssembly vs Server?
 2. Parsing strategy: Regex vs structured parser?
