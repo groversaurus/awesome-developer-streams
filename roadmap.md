@@ -104,9 +104,7 @@ Transform the awesome-developer-streams list into an interactive, searchable Bla
 ### 🚧 In Progress
 - [x] Finalize architectural decisions ✅
 - [x] Design JSON schema ✅
-- [ ] Set up project structure
-
-### 📋 To Do
+- [x] Set up project structure ✅
 - [ ] Create markdown parser prototype
 - [ ] Test parsing on subset of streamers
 - [ ] Validate JSON output
