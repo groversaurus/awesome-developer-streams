@@ -1,3 +1,17 @@
 *.sw*
 
 .fake
+
+# .NET build artifacts
+bin/
+obj/
+*.dll
+*.pdb
+*.cache
+*.user
+*.suo
+*.swp
+*~
+.vs/
+.vscode/
+*.DotSettings.user
