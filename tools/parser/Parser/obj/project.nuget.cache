@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "ncd5CambfLQ=",
+  "success": true,
+  "projectFilePath": "/home/groversaurus/projects/awesome-developer-streams/tools/parser/Parser/Parser.fsproj",
+  "expectedPackageFiles": [
+    "/home/groversaurus/.nuget/packages/fsharp.core/9.0.303/fsharp.core.9.0.303.nupkg.sha512"
+  ],
+  "logs": []
+}
