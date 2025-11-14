@@ -3,6 +3,22 @@
 ## Project Overview
 This is a Blazor spike project for the awesome-developer-streams repository. The goal is to create a searchable, interactive web application to browse developer streamers while maintaining the existing README.md as the community-editable source of truth.
 
+## User Preferences
+
+### Working Style
+- **Iterative Development**: User prefers to pause and review before moving to next steps
+- **Visual Verification**: User wants to inspect generated files (like JSON) before proceeding
+- **Deliberate Commits**: User commits changes themselves after review, not automatically
+- **Discussion First**: User likes to discuss and validate approach before implementation
+- **Technology Consistency**: Prefer using existing project tools (F#) over introducing new ones (Python)
+
+### Communication Preferences
+- Be concise and direct
+- Wait for explicit approval before starting Blazor app work
+- Provide summaries and statistics for validation
+- Show concrete examples of parsed data
+- Don't create unnecessary documentation files
+
 ## Architecture Decisions
 
 ### Data Flow
@@ -13,9 +29,10 @@ This is a Blazor spike project for the awesome-developer-streams repository. The
 ### Technology Stack
 - **Frontend**: Blazor WebAssembly (static hosting)
 - **Data Format**: JSON schema for streamer data
-- **Validation**: F# console application for link checking (manual execution)
-- **Parser**: TBD (C# or F#)
-- **Languages**: C# for Blazor, F# for tooling
+- **Parser**: F# console application with hybrid parsing approach
+- **Validator**: F# console application for JSON structure validation
+- **Link Checker**: F# console application (to be implemented)
+- **Languages**: C# for Blazor, F# for all tooling
 
 ## Code Style & Conventions
 
@@ -28,17 +45,31 @@ This is a Blazor spike project for the awesome-developer-streams repository. The
 ### F# / Tooling
 - Functional-first approach
 - Immutable data structures
-- Use Railway-Oriented Programming for error handling
+- Use pattern matching extensively
 - Pipeline operators for data transformation
+- Console apps for all tooling (parser, validator, link-checker)
+- Clear, informative console output with progress indicators
+
+### Parsing Strategy
+- **Hybrid Approach**: Structural navigation + targeted regex
+- Find main content section: "# Developers That Stream"
+- Split by `---` separators to get individual streamer blocks
+- Parse each block for structured data (name, description, topics, platforms, links)
+- Determine alphabetical section from first letter of name
+- Flexible link extraction to handle any link type in README
 
 ### JSON Schema
 ```json
 {
+  "version": "1.0.0",
+  "lastUpdated": "YYYY-MM-DD",
   "streamers": [
     {
-      "id": "string",
+      "id": "string (slug format)",
       "name": "string",
-      "handle": "string",
+      "aka": "string (optional)",
+      "handle": "string (optional)",
+      "description": "string",
       "topics": ["string"],
       "platforms": [
         {
@@ -50,9 +81,11 @@ This is a Blazor spike project for the awesome-developer-streams repository. The
         "twitter": "string",
         "github": "string",
         "website": "string",
-        "youtube": "string"
+        "youtube": "string",
+        "playlist": "string"
       },
-      "languages": ["string"]
+      "languages": ["string"],
+      "alphabeticalSection": "string (A-Z)"
     }
   ]
 }
@@ -64,12 +97,14 @@ This is a Blazor spike project for the awesome-developer-streams repository. The
 ├── README.md                    # Community-editable source
 ├── data/
 │   ├── streamers.json          # Generated from README
-│   └── validation-report.json  # Link validation results
+│   ├── schema.json             # JSON Schema definition
+│   └── example.json            # Sample data
 ├── tools/
-│   ├── parser/                 # Markdown → JSON converter
-│   └── link-checker/           # URL validation
+│   ├── parser/                 # F# Markdown → JSON converter
+│   ├── validator/              # F# JSON structure validator
+│   └── link-checker/           # F# URL validation (to be implemented)
 ├── src/
-│   └── BlazorApp/              # Blazor application
+│   └── AwesomeDevStreams/      # Blazor WebAssembly application
 ├── .github/
 │   └── copilot-instructions.md # This file
 └── roadmap.md                  # Project roadmap
@@ -109,19 +144,13 @@ This is a Blazor spike project for the awesome-developer-streams repository. The
 3. ✅ Link validation: **Manual F# tool**
 4. API integrations: Twitch live status?
 5. Deployment target: GitHub Pages, Azure, other?
-## Open Questions (To be refined)
-1. Blazor hosting model: WebAssembly vs Server?
-2. Parsing strategy: Regex vs structured parser?
-3. Link validation: One-time vs CI/CD automated?
-4. API integrations: Twitch live status?
-5. Deployment target: GitHub Pages, Azure, other?
 
 ## Contributing
 When working on this project:
 - Keep README.md format backward compatible
 - JSON schema changes require parser updates
-- Test with full dataset
-- Consider performance with 100+ streamers
+- Test with full dataset (232 streamers)
+- Consider performance with 200+ streamers
 - Maintain accessibility standards
 
 ## Notes
