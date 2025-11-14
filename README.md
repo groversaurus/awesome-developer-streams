@@ -1115,7 +1115,7 @@ Presenters:-
 #### Links:
 - [Twitter](https://twitter.com/millermark)
 - [GitHub](https://github.com/millermark)
-- [CodeRush feature of the week (YouTube)](https://www.youtube.com/playlist?list=PL8h4jt35t1wgawacCN9wmxq1EN36CNUGk)
+- [Playlist](https://www.youtube.com/playlist?list=PL8h4jt35t1wgawacCN9wmxq1EN36CNUGk)
 
 [(top)](#table-of-contents)
 

@@ -1,29 +1,48 @@
 ﻿open System
 open System.IO
+open System.Text.Json
+open System.Text.Json.Serialization
 open System.Text.RegularExpressions
 
 // Domain types matching our JSON schema
 type Platform = {
+    [<JsonPropertyName("name")>]
     Name: string
+    [<JsonPropertyName("url")>]
     Url: string
 }
 
 type Streamer = {
+    [<JsonPropertyName("id")>]
     Id: string
+    [<JsonPropertyName("name")>]
     Name: string
+    [<JsonPropertyName("aka")>]
+    [<JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)>]
     Aka: string option
+    [<JsonPropertyName("handle")>]
+    [<JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)>]
     Handle: string option
+    [<JsonPropertyName("description")>]
     Description: string
+    [<JsonPropertyName("topics")>]
     Topics: string list
+    [<JsonPropertyName("platforms")>]
     Platforms: Platform list
+    [<JsonPropertyName("links")>]
     Links: Map<string, string>
+    [<JsonPropertyName("languages")>]
     Languages: string list
+    [<JsonPropertyName("alphabeticalSection")>]
     AlphabeticalSection: string
 }
 
 type StreamerData = {
+    [<JsonPropertyName("version")>]
     Version: string
+    [<JsonPropertyName("lastUpdated")>]
     LastUpdated: string
+    [<JsonPropertyName("streamers")>]
     Streamers: Streamer list
 }
 
@@ -58,59 +77,80 @@ let extractLink (line: string) =
     else
         None
 
-let parseStreamerBlock (section: string) (lines: string list) : Streamer option =
-    try
-        // Find the name (### header)
-        let nameInfo = 
-            lines 
-            |> List.tryPick (fun line -> 
-                if line.StartsWith("###") then extractName line else None)
-        
-        match nameInfo with
+let parseStreamerBlock (section: string) (block: string) : Streamer option =
+    let lines = block.Split([|'\n'; '\r'|], StringSplitOptions.RemoveEmptyEntries)
+    
+    if lines.Length = 0 then None
+    else
+        // First line is name (starts with ###)
+        match extractName lines[0] with
         | None -> None
         | Some(name, aka) ->
-            // Extract description (What X streams:)
-            let descIdx = lines |> List.tryFindIndex (fun l -> l.Contains("What") && l.Contains("streams"))
-            let description = 
-                match descIdx with
+            let id = createId name
+            
+            // Find "What X streams:" section
+            let streamingLine = 
+                lines 
+                |> Array.tryFindIndex (fun line -> line.StartsWith("####") && line.ToLower().Contains("what") && line.ToLower().Contains(("stream")))
+            
+            let description, topics = 
+                match streamingLine with
                 | Some idx when idx + 1 < lines.Length ->
-                    let desc = lines.[idx + 1].Trim()
-                    if desc.StartsWith("-") then desc.Substring(1).Trim() else desc
-                | _ -> ""
+                    let desc = lines[idx + 1].TrimStart([|'-'; ' '|])
+                    (desc, extractTopics desc)
+                | _ -> ("", [])
             
-            // Extract topics from description
-            let topics = extractTopics description
+            // Find "Streaming on:" section for platform links
+            let platformsStartIdx = 
+                lines 
+                |> Array.tryFindIndex (fun line -> line.StartsWith("####") && line.ToLower().Contains("streaming on"))
             
-            // Extract platforms (Streaming on:)
-            let platformStartIdx = lines |> List.tryFindIndex (fun l -> l.Contains("Streaming on"))
             let platforms = 
-                match platformStartIdx with
-                | Some startIdx ->
+                match platformsStartIdx with
+                | Some idx ->
                     lines
-                    |> List.skip (startIdx + 1)
-                    |> List.takeWhile (fun l -> l.StartsWith("-") && l.Contains("["))
-                    |> List.choose extractLink
-                    |> List.map (fun (name, url) -> { Name = name; Url = url })
+                    |> Array.skip (idx + 1)
+                    |> Array.takeWhile (fun line -> not (line.StartsWith("####") || line.StartsWith("---")))
+                    |> Array.filter (fun line -> line.StartsWith("-") && line.Contains("[") && line.Contains("]"))
+                    |> Array.choose extractLink
+                    |> Array.map (fun (text, url) -> { Platform.Name = text; Url = url })
+                    |> Array.toList
                 | None -> []
             
-            // Extract links (Links:)
-            let linksStartIdx = lines |> List.tryFindIndex (fun l -> l.Trim() = "#### Links:")
+            // Find "Links:" section for social links
+            let linksStartIdx = 
+                lines 
+                |> Array.tryFindIndex (fun line -> line.StartsWith("#### Links:"))
+            
             let links = 
                 match linksStartIdx with
-                | Some startIdx ->
-                    lines
-                    |> List.skip (startIdx + 1)
-                    |> List.takeWhile (fun l -> l.StartsWith("-") && l.Contains("["))
-                    |> List.choose extractLink
-                    |> List.map (fun (name, url) -> (name.ToLowerInvariant(), url))
-                    |> Map.ofList
+                | Some idx ->
+                    let linkLines = 
+                        lines
+                        |> Array.skip (idx + 1)
+                        |> Array.takeWhile (fun line -> not (line.StartsWith("####") || line.StartsWith("---") || line.StartsWith("###")))
+                        |> Array.filter (fun line -> line.StartsWith("-") && line.Contains("["))
+                    
+                    linkLines
+                    |> Array.choose extractLink
+                    |> Array.map (fun (name, url) -> 
+                        // Normalize common link names to lowercase keys
+                        let key = 
+                            match name.ToLowerInvariant() with
+                            | "twitter" | "x" -> "twitter"
+                            | "github" -> "github"
+                            | "website" | "web" | "blog" -> "website"
+                            | "youtube" | "youtube channel" | "video playlist" -> "youtube"
+                            | other -> other.ToLowerInvariant().Replace(" ", "_")
+                        (key, url))
+                    |> Map.ofArray
                 | None -> Map.empty
             
-            // For now, default to English
+            // Extract languages - for now default to English
             let languages = ["English"]
             
             Some {
-                Id = createId name
+                Id = id
                 Name = name
                 Aka = aka
                 Handle = aka
@@ -121,10 +161,33 @@ let parseStreamerBlock (section: string) (lines: string list) : Streamer option 
                 Languages = languages
                 AlphabeticalSection = section
             }
-    with
-    | ex -> 
-        printfn "Error parsing streamer block: %s" ex.Message
-        None
+
+// Section parsing functions
+let parseSections (lines: string list) : (string * string) list =
+    // Find all section headers (## A, ## B, etc.)
+    let sectionIndices = 
+        lines
+        |> List.indexed
+        |> List.filter (fun (_, line) -> Regex.IsMatch(line, @"^##\s+[A-Z]$"))
+        |> List.map fst
+    
+    // Extract section name and text for each section
+    sectionIndices
+    |> List.mapi (fun i idx ->
+        let sectionName = lines.[idx].Substring(3).Trim()
+        let endIdx = 
+            if i + 1 < sectionIndices.Length then
+                sectionIndices.[i + 1]
+            else
+                lines.Length
+        let sectionLines = lines.[idx + 1 .. endIdx - 1]
+        let sectionText = String.Join("\n", sectionLines)
+        (sectionName, sectionText))
+
+let splitIntoStreamerBlocks (sectionText: string) : string array =
+    sectionText.Split([|"---"|], StringSplitOptions.RemoveEmptyEntries)
+    |> Array.filter (fun block -> block.Trim().StartsWith("###"))
+
 
 [<EntryPoint>]
 let main argv =
@@ -132,19 +195,77 @@ let main argv =
     printfn "=========================================="
     
     let readmePath = "../../../README.md"
+    let outputPath = "../../../data/streamers.json"
     
     if not (File.Exists(readmePath)) then
         printfn "ERROR: README.md not found at %s" readmePath
         1
     else
         printfn "Reading README.md..."
-        let lines = File.ReadAllLines(readmePath) |> Array.toList
+        let allLines = File.ReadAllLines(readmePath)
+        
+        // Find where actual streamer content starts (after the TOC)
+        let startIdx = 
+            allLines
+            |> Array.tryFindIndex (fun line -> line.Trim() = "# Developers That Stream")
+        
+        let content = 
+            match startIdx with
+            | Some idx -> String.Join("\n", allLines |> Array.skip (idx + 1))
+            | None -> String.Join("\n", allLines)
         
         printfn "Parsing streamers..."
-        printfn "TODO: Implement full parsing logic"
         
-        // For now, just test with a simple output
-        printfn "\nParser prototype ready!"
-        printfn "Next: Implement section-based parsing to extract all streamers"
+        // Split directly into streamer blocks
+        let streamerBlocks = splitIntoStreamerBlocks content
+        
+        printfn "Found %d streamer blocks" streamerBlocks.Length
+        
+        // Parse each streamer and determine section by first letter of name
+        let streamers = 
+            streamerBlocks
+            |> Array.choose (fun block ->
+                match extractName (block.Split([|'\n'; '\r'|], StringSplitOptions.RemoveEmptyEntries) |> Array.head) with
+                | Some(name, _) ->
+                    let section = name.[0].ToString().ToUpperInvariant()
+                    parseStreamerBlock section block
+                | None -> None)
+            |> Array.toList
+        
+        // Group by section for reporting
+        let sections = 
+            streamers
+            |> List.groupBy (fun s -> s.AlphabeticalSection)
+            |> List.sortBy fst
+        
+        for (section, sectionStreamers) in sections do
+            printfn "  Section %s: %d streamers" section sectionStreamers.Length
+        
+        printfn "\nTotal streamers parsed: %d" streamers.Length
+        
+        // Create output data
+        let data = {
+            Version = "1.0.0"
+            LastUpdated = DateTime.UtcNow.ToString("yyyy-MM-dd")
+            Streamers = streamers
+        }
+        
+        // Serialize to JSON
+        printfn "\nWriting JSON to %s..." outputPath
+        let options = JsonSerializerOptions()
+        options.WriteIndented <- true
+        options.Converters.Add(JsonFSharpConverter())
+        
+        let json = JsonSerializer.Serialize(data, options)
+        
+        // Ensure output directory exists
+        let outputDir = Path.GetDirectoryName(outputPath)
+        if not (Directory.Exists(outputDir)) then
+            Directory.CreateDirectory(outputDir) |> ignore
+        
+        File.WriteAllText(outputPath, json)
+        
+        printfn "✓ Successfully generated streamers.json"
+        printfn "  %d streamers across %d sections" streamers.Length sections.Length
         
         0
