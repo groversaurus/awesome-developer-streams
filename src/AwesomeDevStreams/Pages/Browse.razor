@@ -1,0 +1,308 @@
+@page "/browse"
+@using AwesomeDevStreams.Models
+@using AwesomeDevStreams.Services
+@inject StreamerService StreamerService
+
+<PageTitle>Browse Streamers - Awesome Developer Streams</PageTitle>
+
+<h1>🔍 Browse Streamers</h1>
+
+@if (isLoading)
+{
+    <p><em>Loading streamers...</em></p>
+}
+else
+{
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="searchTerm" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="searchTerm" 
+                                   @bind="searchTerm" @bind:event="oninput" 
+                                   placeholder="Search by name, topic, or description..." />
+                        </div>
+                        <div class="col-md-2">
+                            <label for="platformFilter" class="form-label">Platform</label>
+                            <select class="form-select" id="platformFilter" @bind="selectedPlatform">
+                                <option value="">All Platforms</option>
+                                @foreach (var platform in platforms)
+                                {
+                                    <option value="@platform">@platform</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="languageFilter" class="form-label">Language</label>
+                            <select class="form-select" id="languageFilter" @bind="selectedLanguage">
+                                <option value="">All Languages</option>
+                                @foreach (var language in languages)
+                                {
+                                    <option value="@language">@language</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <button class="btn btn-primary w-100" @onclick="ApplyFilters">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <p class="text-muted">Showing @filteredStreamers.Count of @totalStreamers streamers</p>
+    </div>
+
+    <div class="row">
+        @foreach (var streamer in filteredStreamers)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 streamer-card" @onclick="() => SelectStreamer(streamer)">
+                    <div class="card-body">
+                        <h5 class="card-title">@streamer.Name</h5>
+                        @if (!string.IsNullOrEmpty(streamer.Aka))
+                        {
+                            <p class="text-muted small mb-2">@streamer.Aka</p>
+                        }
+                        
+                        <p class="card-text small mb-3">@(TruncateDescription(streamer.Description, 100))</p>
+                        
+                        @if (streamer.Platforms.Any())
+                        {
+                            <div class="mb-2">
+                                @foreach (var platform in streamer.Platforms.Take(3))
+                                {
+                                    <span class="badge bg-info me-1">@platform.Name</span>
+                                }
+                            </div>
+                        }
+                        
+                        @if (streamer.Topics.Any())
+                        {
+                            <div class="mb-2">
+                                @foreach (var topic in streamer.Topics.Take(5))
+                                {
+                                    <span class="badge bg-secondary me-1 mb-1">@topic</span>
+                                }
+                                @if (streamer.Topics.Count > 5)
+                                {
+                                    <span class="badge bg-light text-dark">+@(streamer.Topics.Count - 5) more</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (filteredStreamers.Count == 0)
+    {
+        <div class="alert alert-info">
+            <p>No streamers found matching your criteria. Try adjusting your filters.</p>
+        </div>
+    }
+}
+
+@if (selectedStreamer != null)
+{
+    <div class="modal-backdrop fade show" @onclick="CloseDetail"></div>
+    <div class="modal fade show d-block" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@selectedStreamer.Name</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDetail"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(selectedStreamer.Aka))
+                    {
+                        <p><strong>Also known as:</strong> @selectedStreamer.Aka</p>
+                    }
+                    
+                    <p><strong>Description:</strong> @selectedStreamer.Description</p>
+                    
+                    @if (selectedStreamer.Topics.Any())
+                    {
+                        <div class="mb-3">
+                            <strong>Topics:</strong>
+                            <div class="mt-2">
+                                @foreach (var topic in selectedStreamer.Topics)
+                                {
+                                    <span class="badge bg-secondary me-1 mb-1">@topic</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (selectedStreamer.Platforms.Any())
+                    {
+                        <div class="mb-3">
+                            <strong>Streaming on:</strong>
+                            <ul class="list-unstyled mt-2">
+                                @foreach (var platform in selectedStreamer.Platforms)
+                                {
+                                    <li>
+                                        <a href="@platform.Url" target="_blank" class="text-decoration-none">
+                                            <span class="badge bg-info">@platform.Name</span> @platform.Url
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                    
+                    @if (selectedStreamer.Links.Any())
+                    {
+                        <div class="mb-3">
+                            <strong>Links:</strong>
+                            <ul class="list-unstyled mt-2">
+                                @foreach (var link in selectedStreamer.Links)
+                                {
+                                    <li>
+                                        <a href="@link.Value" target="_blank" class="text-decoration-none">
+                                            @CapitalizeFirst(link.Key)
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                    
+                    @if (selectedStreamer.Languages.Any())
+                    {
+                        <div class="mb-3">
+                            <strong>Languages:</strong> @string.Join(", ", selectedStreamer.Languages)
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseDetail">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .streamer-card {
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .streamer-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1040;
+    }
+</style>
+
+@code {
+    private List<Streamer> allStreamers = new();
+    private List<Streamer> filteredStreamers = new();
+    private List<string> platforms = new();
+    private List<string> languages = new();
+    private bool isLoading = true;
+    private int totalStreamers = 0;
+    
+    private string searchTerm = string.Empty;
+    private string selectedPlatform = string.Empty;
+    private string selectedLanguage = string.Empty;
+    
+    private Streamer? selectedStreamer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var data = await StreamerService.GetStreamersAsync();
+            allStreamers = data.Streamers;
+            totalStreamers = allStreamers.Count;
+            
+            platforms = await StreamerService.GetAllPlatformsAsync();
+            languages = await StreamerService.GetAllLanguagesAsync();
+            
+            ApplyFilters();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading streamers: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        filteredStreamers = allStreamers.AsEnumerable().ToList();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.ToLowerInvariant();
+            filteredStreamers = filteredStreamers.Where(s =>
+                s.Name.ToLowerInvariant().Contains(term) ||
+                s.Description.ToLowerInvariant().Contains(term) ||
+                s.Topics.Any(t => t.ToLowerInvariant().Contains(term)) ||
+                (!string.IsNullOrEmpty(s.Aka) && s.Aka.ToLowerInvariant().Contains(term))
+            ).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedPlatform))
+        {
+            filteredStreamers = filteredStreamers.Where(s =>
+                s.Platforms.Any(p => p.Name.Equals(selectedPlatform, StringComparison.OrdinalIgnoreCase))
+            ).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedLanguage))
+        {
+            filteredStreamers = filteredStreamers.Where(s =>
+                s.Languages.Any(l => l.Equals(selectedLanguage, StringComparison.OrdinalIgnoreCase))
+            ).ToList();
+        }
+
+        filteredStreamers = filteredStreamers.OrderBy(s => s.Name).ToList();
+    }
+
+    private void SelectStreamer(Streamer streamer)
+    {
+        selectedStreamer = streamer;
+    }
+
+    private void CloseDetail()
+    {
+        selectedStreamer = null;
+    }
+
+    private string TruncateDescription(string description, int maxLength)
+    {
+        if (string.IsNullOrEmpty(description) || description.Length <= maxLength)
+            return description;
+        
+        return description.Substring(0, maxLength) + "...";
+    }
+
+    private string CapitalizeFirst(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+        
+        return char.ToUpper(text[0]) + text.Substring(1).Replace("_", " ");
+    }
+}

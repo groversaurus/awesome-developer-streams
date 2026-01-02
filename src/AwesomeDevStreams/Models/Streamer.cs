@@ -44,6 +44,39 @@ public class Streamer
     public string AlphabeticalSection { get; set; } = string.Empty;
 }
 
+public class TopicCount
+{
+    [JsonPropertyName("topic")]
+    public string Topic { get; set; } = string.Empty;
+    
+    [JsonPropertyName("count")]
+    public int Count { get; set; }
+}
+
+public class Statistics
+{
+    [JsonPropertyName("totalStreamers")]
+    public int TotalStreamers { get; set; }
+    
+    [JsonPropertyName("totalTopics")]
+    public int TotalTopics { get; set; }
+    
+    [JsonPropertyName("totalPlatforms")]
+    public int TotalPlatforms { get; set; }
+    
+    [JsonPropertyName("totalLanguages")]
+    public int TotalLanguages { get; set; }
+    
+    [JsonPropertyName("platformBreakdown")]
+    public Dictionary<string, int> PlatformBreakdown { get; set; } = new();
+    
+    [JsonPropertyName("languageBreakdown")]
+    public Dictionary<string, int> LanguageBreakdown { get; set; } = new();
+    
+    [JsonPropertyName("topTopics")]
+    public List<TopicCount> TopTopics { get; set; } = new();
+}
+
 public class StreamerData
 {
     [JsonPropertyName("version")]
@@ -51,6 +84,9 @@ public class StreamerData
     
     [JsonPropertyName("lastUpdated")]
     public string LastUpdated { get; set; } = string.Empty;
+    
+    [JsonPropertyName("statistics")]
+    public Statistics Statistics { get; set; } = new();
     
     [JsonPropertyName("streamers")]
     public List<Streamer> Streamers { get; set; } = new();

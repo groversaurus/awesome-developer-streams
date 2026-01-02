@@ -37,11 +37,37 @@ type Streamer = {
     AlphabeticalSection: string
 }
 
+type TopicCount = {
+    [<JsonPropertyName("topic")>]
+    Topic: string
+    [<JsonPropertyName("count")>]
+    Count: int
+}
+
+type Statistics = {
+    [<JsonPropertyName("totalStreamers")>]
+    TotalStreamers: int
+    [<JsonPropertyName("totalTopics")>]
+    TotalTopics: int
+    [<JsonPropertyName("totalPlatforms")>]
+    TotalPlatforms: int
+    [<JsonPropertyName("totalLanguages")>]
+    TotalLanguages: int
+    [<JsonPropertyName("platformBreakdown")>]
+    PlatformBreakdown: Map<string, int>
+    [<JsonPropertyName("languageBreakdown")>]
+    LanguageBreakdown: Map<string, int>
+    [<JsonPropertyName("topTopics")>]
+    TopTopics: TopicCount list
+}
+
 type StreamerData = {
     [<JsonPropertyName("version")>]
     Version: string
     [<JsonPropertyName("lastUpdated")>]
     LastUpdated: string
+    [<JsonPropertyName("statistics")>]
+    Statistics: Statistics
     [<JsonPropertyName("streamers")>]
     Streamers: Streamer list
 }
@@ -188,6 +214,59 @@ let splitIntoStreamerBlocks (sectionText: string) : string array =
     sectionText.Split([|"---"|], StringSplitOptions.RemoveEmptyEntries)
     |> Array.filter (fun block -> block.Trim().StartsWith("###"))
 
+let calculateStatistics (streamers: Streamer list) : Statistics =
+    // Count unique topics
+    let allTopics = 
+        streamers 
+        |> List.collect (fun s -> s.Topics)
+    
+    let uniqueTopics = allTopics |> List.distinct
+    
+    // Count topics frequency for top topics
+    let topicCounts = 
+        allTopics
+        |> List.groupBy id
+        |> List.map (fun (topic, instances) -> { Topic = topic; Count = instances.Length })
+        |> List.sortByDescending (fun tc -> tc.Count)
+        |> List.take (min 20 (List.length (List.groupBy id allTopics)))
+    
+    // Count unique platforms and create breakdown
+    let allPlatforms = 
+        streamers 
+        |> List.collect (fun s -> s.Platforms |> List.map (fun p -> p.Name))
+    
+    let uniquePlatforms = allPlatforms |> List.distinct
+    
+    let platformBreakdown = 
+        allPlatforms
+        |> List.groupBy id
+        |> List.map (fun (platform, instances) -> (platform, instances.Length))
+        |> Map.ofList
+    
+    // Count unique languages and create breakdown
+    let allLanguages = 
+        streamers 
+        |> List.collect (fun s -> s.Languages)
+    
+    let uniqueLanguages = allLanguages |> List.distinct
+    
+    let languageBreakdown = 
+        allLanguages
+        |> List.groupBy id
+        |> List.map (fun (language, instances) -> (language, instances.Length))
+        |> Map.ofList
+    
+    {
+        TotalStreamers = streamers.Length
+        TotalTopics = uniqueTopics.Length
+        TotalPlatforms = uniquePlatforms.Length
+        TotalLanguages = uniqueLanguages.Length
+        PlatformBreakdown = platformBreakdown
+        LanguageBreakdown = languageBreakdown
+        TopTopics = topicCounts
+    }
+
+
 
 [<EntryPoint>]
 let main argv =
@@ -243,10 +322,19 @@ let main argv =
         
         printfn "\nTotal streamers parsed: %d" streamers.Length
         
+        // Calculate statistics
+        printfn "\nCalculating statistics..."
+        let stats = calculateStatistics streamers
+        
+        printfn "  Total unique topics: %d" stats.TotalTopics
+        printfn "  Total unique platforms: %d" stats.TotalPlatforms
+        printfn "  Total unique languages: %d" stats.TotalLanguages
+        
         // Create output data
         let data = {
             Version = "1.0.0"
             LastUpdated = DateTime.UtcNow.ToString("yyyy-MM-dd")
+            Statistics = stats
             Streamers = streamers
         }
         

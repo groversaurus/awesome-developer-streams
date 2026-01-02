@@ -13,6 +13,9 @@
       "format": "date-time",
       "description": "Last time the data was updated"
     },
+    "statistics": {
+      "$ref": "#/definitions/statistics"
+    },
     "streamers": {
       "type": "array",
       "items": {
@@ -20,8 +23,59 @@
       }
     }
   },
-  "required": ["version", "lastUpdated", "streamers"],
+  "required": ["version", "lastUpdated", "statistics", "streamers"],
   "definitions": {
+    "statistics": {
+      "type": "object",
+      "properties": {
+        "totalStreamers": {
+          "type": "integer",
+          "description": "Total number of streamers"
+        },
+        "totalTopics": {
+          "type": "integer",
+          "description": "Total number of unique topics/technologies"
+        },
+        "totalPlatforms": {
+          "type": "integer",
+          "description": "Total number of unique platforms"
+        },
+        "totalLanguages": {
+          "type": "integer",
+          "description": "Total number of unique spoken languages"
+        },
+        "platformBreakdown": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "description": "Count of streamers per platform"
+        },
+        "languageBreakdown": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "description": "Count of streamers per language"
+        },
+        "topTopics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "topic": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer"
+              }
+            }
+          },
+          "description": "Most popular topics with counts"
+        }
+      },
+      "required": ["totalStreamers", "totalTopics", "totalPlatforms", "totalLanguages", "platformBreakdown", "languageBreakdown", "topTopics"]
+    },
     "streamer": {
       "type": "object",
       "properties": {

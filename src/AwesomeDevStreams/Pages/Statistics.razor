@@ -1,0 +1,144 @@
+@page "/statistics"
+@using AwesomeDevStreams.Models
+@using AwesomeDevStreams.Services
+@inject StreamerService StreamerService
+
+<PageTitle>Statistics - Awesome Developer Streams</PageTitle>
+
+<h1>📊 Statistics</h1>
+
+@if (isLoading)
+{
+    <p><em>Loading statistics...</em></p>
+}
+else if (data != null && data.Statistics != null)
+{
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Streamers</h5>
+                    <p class="display-4">@data.Statistics.TotalStreamers</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Technologies</h5>
+                    <p class="display-4">@data.Statistics.TotalTopics</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Platforms</h5>
+                    <p class="display-4">@data.Statistics.TotalPlatforms</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Languages</h5>
+                    <p class="display-4">@data.Statistics.TotalLanguages</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Platform Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        @foreach (var platform in data.Statistics.PlatformBreakdown.OrderByDescending(p => p.Value))
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                @platform.Key
+                                <span class="badge bg-primary rounded-pill">@platform.Value</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">Language Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        @foreach (var language in data.Statistics.LanguageBreakdown.OrderByDescending(l => l.Value))
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                @language.Key
+                                <span class="badge bg-success rounded-pill">@language.Value</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Top 20 Technologies</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var topic in data.Statistics.TopTopics)
+                        {
+                            <div class="col-md-6 col-lg-4 mb-2">
+                                <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                                    <span>@topic.Topic</span>
+                                    <span class="badge bg-info rounded-pill">@topic.Count</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 text-muted">
+        <small>Data version: @data.Version | Last updated: @data.LastUpdated</small>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning">
+        <p>Unable to load statistics. Please try again later.</p>
+    </div>
+}
+
+@code {
+    private StreamerData? data;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            data = await StreamerService.GetStreamersAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
